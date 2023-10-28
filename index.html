@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>P-Chat</title>
+    <style>
+
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #1f1f1f; /* Dark background color */
+        color: #eaeaea; /* Light text color */
+      }
+
+      .wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      
+      .form-container {
+        max-width: 300px;
+        text-align: center;
+      }
+      
+      .label2 {
+        display: block;
+        margin-bottom: 10px;
+      }
+      
+      .input2 {
+        width: 100%;
+        padding: 5px;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      
+      .button2 {
+        background-color: #333;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      
+      .button2:hover {
+        background-color: #555;
+      }
+
+      .heading {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+
+    </style>
+  </head>
+  <body>
+
+    <form action="/chat" method="get">
+        <div class="wrapper">
+            <div class="form-container">
+                <h1 class="heading">THE P-CHAT ROOM </h1>
+              <label for="name" class="label2"> Your good name</label>
+              <input type="text" id="name" name="name" class="input2">
+              <br>
+              <br>
+              <button type="submit" onclick="setUsername()" class="button2">Enter</button>
+              <br>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        // create setUsername function and store name in localStorage
+        function setUsername() {
+            var name = document.getElementById("name").value;
+            localStorage.setItem("name", name);
+             
+        }
+    </script>
+  </body>
+</html>

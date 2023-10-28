@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+  <html>
+  <head>
+    <title>P-Chat</title>
+    <style>
+      /* CSS styles for floating input box */
+
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #1f1f1f; /* Dark background color */
+        color: #eaeaea; /* Light text color */
+      }
+
+      #form {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 0.25rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 3rem;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+      }
+
+      #input {
+        border: none;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 2rem;
+        margin: 0.25rem;
+        background-color: #3a3a3a; /* Dark input background color */
+        color: #eaeaea; /* Light input text color */
+      }
+
+      #input:focus {
+        outline: none;
+      }
+
+      #form > button {
+        background: #333;
+        border: none;
+        padding: 0 1rem;
+        margin: 0.25rem;
+        border-radius: 3px;
+        outline: none;
+        color: #fff;
+        font-family: "Roboto Condensed", sans-serif; /* Robotics font */
+      }
+
+      #form > button:hover {
+        background: #555; /* Darker background color on hover */
+      }
+
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      #messages > li {
+        padding: 0.5rem 1rem;
+      }
+
+      #messages > li:nth-child(odd) {
+        background: #3a3a3a; /* Dark message background color */
+      }
+
+      
+
+      .wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      
+      .form-container {
+        max-width: 300px;
+        text-align: center;
+      }
+      
+      .label2 {
+        display: block;
+        margin-bottom: 10px;
+      }
+      
+      .input2 {
+        width: 100%;
+        padding: 5px;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      
+      .button2 {
+        background-color: #333;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      
+      .button2:hover {
+        background-color: #555;
+      }
+
+      .heading {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+      .floating-input-box {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background color */
+        z-index: 9999; /* Ensure the floating box appears on top of other elements */
+      }
+
+      .input-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+      }
+
+      .input-container input[type="text"] {
+        flex-grow: 1;
+        padding: 10px;
+        font-size: 16px;
+      }
+
+      .input-container button {
+        background-color: #333;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .input-container button:hover {
+        background-color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Main content of the page -->
+    <ul id="messages"></ul>
+    <div id="form" >
+        <button type="button" id="myBtn1" onclick="showFloatingInputBox()" >Choose my friend</button>
+    <input id="input" type="input"  />
+    <button type="submit" id="myBtn" onClick="sendMessage()" >Send</button>
+    </div>
+
+    <!-- Floating input box -->
+    <div id="floatingInputBox" class="floating-input-box" style="display: none;">
+      <div class="input-container">
+        <input id="ip" type="text" placeholder="your friend's username" />
+        <button id="sendButton" type="button" onclick="hideFloatingInputBox()">Let's Chat</button>
+      </div>
+    </div>
+
+  </body>
+    <script>
+    function showFloatingInputBox() {
+        document.getElementById("floatingInputBox").style.display = "flex";
+      }
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+     <script>
+
+  
+  var socket = io();
+  var name = localStorage.getItem('name');
+  var fname;
+  var friendId;
+  var input = document.getElementById("input");
+
+  
+
+    socket.emit('setUsername', name); 
+    // console.log( 'At the client' + socket.id);
+
+      var user;
+      var userId;
+
+      socket.on('userExists', function(data){
+         alert(data);
+      });
+
+      socket.on('userSet', function(data){
+         user = data.name;
+        userId = data.id;
+        console.log( 'Client side ID : '+ userId)
+      });
+
+      function hideFloatingInputBox() {
+        fname = document.getElementById('ip').value;
+        document.getElementById("floatingInputBox").style.display = "none";
+        socket.emit('setfname',  fname.toString() );
+
+        loadChats();
+
+      }
+
+        socket.on('setfid', function(data){
+             friendId = data;
+        });
+
+
+        function getHash(input){
+            var hash = 0, len = input.length;
+            for (var i = 0; i < len; i++) {
+                hash  = ((hash << 5) - hash) + input.charCodeAt(i);
+                hash |= 0; // to 32bit integer
+            }
+            return hash;
+         }
+
+      function sendMessage(){
+
+
+        input.addEventListener("keypress", function(event) {
+
+        if (event.key === "Enter") {
+
+            event.preventDefault();
+            document.getElementById("myBtn").click();
+        }
+        });
+
+
+        var msg = input.value;
+         input.value = '';
+         if(msg){
+            socket.emit('msg', {message: msg, user: user ,friendName: fname});
+         }
+
+         var msgObj = {
+            id : getHash(user)+getHash(fname),
+            sender: user,
+            message: msg,
+         }
+
+         fetch('/savechat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(msgObj)
+        }).then(function(response){
+            console.log(response.json());
+        });
+      }
+
+      function loadChats()
+      {
+
+        console.log('Load My chats')
+
+        const chatId = {
+            id : getHash(user)+getHash(fname),
+        };
+
+        fetch('/loadchat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(chatId)
+        })
+        .then(function(response){
+
+            if( response.status === 200 )
+               return response.json();
+            else
+               return 'failed';
+        })
+        .then(function(data){
+
+            if( data === 'failed' )
+            {
+                console.log('No Chats found')
+                return;
+            }
+            
+            data = JSON.parse(data.data);
+            console.log(data)
+
+            data.forEach( function (chat,idx) {
+                    
+                    var messages = document.getElementById('messages');
+                    var item = document.createElement('li');
+                    item.textContent =  chat.sender + ': ' + chat.message;
+                    messages.appendChild(item);
+                    window.scrollTo(0, document.body.scrollHeight);
+            })
+        })
+        
+      }
+
+      socket.on('newmsg', function(data){
+
+        // console.log(userId + "   " + friendId + "   " + data.friendId)
+
+         if(  userId === data.uId  ){
+
+            
+            var messages = document.getElementById('messages');
+            var item = document.createElement('li');
+            item.textContent =  data.data.user + ': ' + data.data.message;
+            itm = ''
+            it = ''
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+         }
+      });
+
+
+      socket.on('friendMsg', function(data){
+
+        console.log(userId + "   " + data.fId + "   "  + friendId )
+
+        if( userId === data.fId ){
+
+            var messages = document.getElementById('messages');
+            var item = document.createElement('li');
+            item.textContent =  data.data.user + ': ' + data.data.message;
+            itm = ''
+            it = ''
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+        });
+
+
+
+      
+
+
+    socket.on('broadcast', function(msg) {
+        var messages = document.getElementById('messages');
+        var item = document.createElement('li');
+        item.textContent = msg;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+    });
+ 
+        
+        
+        input.addEventListener( "keyup", function() {
+                socket.emit('typing', {name:user, friendName: fname});
+                  
+        });
+        
+
+        var it;
+        socket.on('typoo', function(data) {
+
+         if( data.uId === userId )   {
+                var messages = document.getElementById('messages');
+            
+            if( it !== data.data )
+            {
+                    var item = document.createElement('li');
+                    item.textContent = data.data;
+                    it = data.data;
+                    itm = ''
+                    messages.appendChild(item);
+                    window.scrollTo(0, document.body.scrollHeight);
+            }
+        }
+
+        });
+
+
+        var itm;
+        socket.on('typoof', function(data) {
+            
+            if( data.fId === userId )   {
+            var messages = document.getElementById('messages');
+            if( itm !== data.data )
+            {
+                    var item = document.createElement('li');
+                    item.textContent = data.data;
+                    itm = data.data;
+                    it = ''
+                    messages.appendChild(item);
+                    window.scrollTo(0, document.body.scrollHeight);
+            }
+            }
+
+        });
+     </script>
+  
+</html>
